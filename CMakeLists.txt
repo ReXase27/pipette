@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
 
-project(pippette LANGUAGES CXX)
+project(pipette LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,9 +18,19 @@ cmake_policy(SET CMP0141 NEW)
 find_package(sockpp CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
-add_executable(pippette-server "app/server.cpp")
-target_link_libraries(pippette-server PRIVATE Sockpp::sockpp-static spdlog::spdlog)
+add_executable(pipette-server)
+target_sources(pipette-server PRIVATE "app/server.cpp" 
+    "pipette/server/server.cpp"
+    "pipette/server/server.hpp"
+)
+target_link_libraries(pipette-server PRIVATE Sockpp::sockpp-static spdlog::spdlog)
+target_include_directories(pipette-server PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 
-add_executable(pippette-client "app/client.cpp")
-target_link_libraries(pippette-client PRIVATE Sockpp::sockpp-static spdlog::spdlog)
+add_executable(pipette-client)
+target_sources(pipette-client PRIVATE "app/client.cpp" 
+    "pipette/client/client.cpp"
+    "pipette/client/client.hpp"
+)
+target_link_libraries(pipette-client PRIVATE Sockpp::sockpp-static spdlog::spdlog)
+target_include_directories(pipette-client PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

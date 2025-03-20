@@ -3,15 +3,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Launch pippette-server",
-            "program": "${workspaceFolder}/build/pippette-server",
+            "name": "Launch pipette-server",
+            "program": "${workspaceFolder}/build/pipette-server",
             "preLaunchTask": "build"
         },
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Launch pippette-client",
-            "program": "${workspaceFolder}/build/pippette-client",
+            "name": "Launch pipette-client",
+            "program": "${workspaceFolder}/build/pipette-client",
             "preLaunchTask": "build"
         }
     ]
