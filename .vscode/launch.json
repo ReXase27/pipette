@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Launch pippette-server",
+            "program": "${workspaceFolder}/build/pippette-server",
+            "preLaunchTask": "build"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Launch pippette-client",
+            "program": "${workspaceFolder}/build/pippette-client",
+            "preLaunchTask": "build"
+        }
+    ]
+}
