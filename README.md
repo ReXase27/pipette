@@ -1,3 +1,3 @@
-# Pippette
+# Pipette
 
 A toy Redis clone
