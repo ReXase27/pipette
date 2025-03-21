@@ -22,6 +22,8 @@ add_executable(pipette-server)
 target_sources(pipette-server PRIVATE "app/server.cpp" 
     "pipette/server/server.cpp"
     "pipette/server/server.hpp"
+    "pipette/server/event_loop.cpp"
+    "pipette/server/event_loop.hpp"
 )
 target_link_libraries(pipette-server PRIVATE Sockpp::sockpp-static spdlog::spdlog)
 target_include_directories(pipette-server PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

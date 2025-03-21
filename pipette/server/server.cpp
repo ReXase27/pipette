@@ -1,8 +1,11 @@
-#include <cassert>
+#include <algorithm>
 #include <pipette/server/server.hpp>
 
+#include <pipette/server/event_loop.hpp>
+
+#include <cassert>
+
 #include <spdlog/spdlog.h>
-#include <thread>
 
 static auto parse_query(const std::string_view input) noexcept
     -> std::pair<std::string, std::string> {
@@ -30,38 +33,40 @@ PipetteServer::PipetteServer(const std::string_view address,
   assert(m_acceptor.is_open());
 }
 
-auto PipetteServer::start() noexcept -> void {
+auto PipetteServer::start(EventLoop &event_loop) noexcept -> void {
   spdlog::info("Server started");
   spdlog::info("Listening on port {}", m_acceptor.address().port());
 
-  while (true) {
-    auto client = m_acceptor.accept();
+  event_loop.add_task([this, &event_loop]() -> EventLoop::Task {
+    while (true) {
+      auto client = m_acceptor.accept();
 
-    if (!client) {
-      spdlog::warn("Error accepting incoming connection: {}",
-                   client.last_error_str());
+      if (!client) {
+        spdlog::warn("Error accepting incoming connection: {}",
+                     client.last_error_str());
 
-      continue;
+        continue;
+      }
+
+      spdlog::info("Accepted connection from: {}",
+                   client.peer_address().to_string());
+
+      event_loop.add_task(
+          [this, client = std::move(client)]() mutable -> EventLoop::Task {
+            co_await handle_connection(std::move(client));
+          });
     }
-
-    spdlog::info("Accepted connection from: {}",
-                 client.peer_address().to_string());
-
-    std::thread(&PipetteServer::handle_connection, this, std::move(client))
-        .detach();
-  }
-
-  spdlog::info("Server stopped");
+  });
 }
 
 auto PipetteServer::handle_connection(sockpp::tcp_socket socket) noexcept
-    -> void {
+    -> EventLoop::Task {
   while (socket.is_open()) {
     std::array<char, 1024> buffer = {0};
 
     if (socket.read(buffer.data(), buffer.size()) == -1) {
       spdlog::warn("Error reading from socket: {}", socket.last_error_str());
-      return;
+      co_return;
     }
 
     auto [command, args] = parse_query(std::string_view(buffer.data()));
@@ -69,12 +74,12 @@ auto PipetteServer::handle_connection(sockpp::tcp_socket socket) noexcept
     if (command == "exit") {
       spdlog::info("Client requested to exit");
       socket.close();
-      return;
+      co_return;
     }
 
     if (!std::ranges::contains(m_commands, command)) {
       socket.write("Invalid command\n", 15);
-      return;
+      co_return;
     }
 
     auto idx =
