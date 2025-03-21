@@ -1,7 +1,30 @@
 #pragma once
 
+#include <array>
+#include <cstdint>
+#include <string_view>
+
+#include <sockpp/tcp_acceptor.h>
+
 namespace pipette::server {
 
-class PipetteServer final {};
+class PipetteServer final {
+public:
+  PipetteServer(const std::string_view address = "localhost",
+                const std::uint16_t port = 6379) noexcept(false);
+  ~PipetteServer() noexcept = default;
+
+  auto start() noexcept -> void;
+
+private:
+  auto handle_connection(sockpp::tcp_socket socket) noexcept -> void;
+  auto echo(sockpp::tcp_socket &conn, const std::string_view args) noexcept
+      -> void;
+
+  sockpp::tcp_acceptor m_acceptor;
+
+  const std::array<std::string, 6> m_commands = {"echo", "get", "set",
+                                                 "del",  "key", "flush"};
+};
 
 } // namespace pipette::server
